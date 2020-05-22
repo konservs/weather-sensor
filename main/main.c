@@ -29,6 +29,18 @@
 #define EXAMPLE_ESP_WIFI_SSID      CONFIG_ESP_WIFI_SSID
 #define EXAMPLE_ESP_WIFI_PASS      CONFIG_ESP_WIFI_PASSWORD
 #define EXAMPLE_ESP_MAXIMUM_RETRY  CONFIG_ESP_MAXIMUM_RETRY
+#define DEFAULT_LISTEN_INTERVAL CONFIG_EXAMPLE_WIFI_LISTEN_INTERVAL
+
+#if CONFIG_EXAMPLE_POWER_SAVE_MIN_MODEM
+#define DEFAULT_PS_MODE WIFI_PS_MIN_MODEM
+#elif CONFIG_EXAMPLE_POWER_SAVE_MAX_MODEM
+#define DEFAULT_PS_MODE WIFI_PS_MAX_MODEM
+#elif CONFIG_EXAMPLE_POWER_SAVE_NONE
+#define DEFAULT_PS_MODE WIFI_PS_NONE
+#else
+#define DEFAULT_PS_MODE WIFI_PS_NONE
+#endif /*CONFIG_POWER_SAVE_MODEM*/
+
 
 /* FreeRTOS event group to signal when we are connected*/
 static EventGroupHandle_t s_wifi_event_group;
@@ -88,11 +100,15 @@ void wifi_init_sta()
                 .capable = true,
                 .required = false
             },
+            .listen_interval = DEFAULT_LISTEN_INTERVAL,
         },
     };
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
     ESP_ERROR_CHECK(esp_wifi_start() );
+
+    ESP_LOGI(TAG, "esp_wifi_set_ps().");
+    esp_wifi_set_ps(DEFAULT_PS_MODE);
 
     ESP_LOGI(TAG, "wifi_init_sta finished.");
 
